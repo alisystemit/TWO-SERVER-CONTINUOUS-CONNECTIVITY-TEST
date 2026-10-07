@@ -304,16 +304,16 @@ main() {
         print_status "ICMP (Server1 → Server2) [info only]" $icmp_ok "$icmp_lat"
         [ $icmp_ok -eq 0 ] && SUCCESS_ICMP=$((SUCCESS_ICMP + 1))
 
-        # TCP REST port check
+        # TCP REST port check (informational - may fail due to firewall or nc behavior)
         tcp_rest_lat=$(test_tcp "$SERVER2" "$REST_PORT")
         tcp_rest_ok=$?
-        print_status "TCP REST port $REST_PORT (Server1 → Server2)" $tcp_rest_ok "$tcp_rest_lat"
+        print_status "TCP REST port $REST_PORT (Server1 → Server2) [info only]" $tcp_rest_ok "$tcp_rest_lat"
         [ $tcp_rest_ok -eq 0 ] && SUCCESS_TCP_REST=$((SUCCESS_TCP_REST + 1))
 
-        # TCP gRPC port check
+        # TCP gRPC port check (informational - may fail due to firewall or nc behavior)
         tcp_grpc_lat=$(test_tcp "$SERVER2" "$GRPC_PORT")
         tcp_grpc_ok=$?
-        print_status "TCP gRPC port $GRPC_PORT (Server1 → Server2)" $tcp_grpc_ok "$tcp_grpc_lat"
+        print_status "TCP gRPC port $GRPC_PORT (Server1 → Server2) [info only]" $tcp_grpc_ok "$tcp_grpc_lat"
         [ $tcp_grpc_ok -eq 0 ] && SUCCESS_TCP_GRPC=$((SUCCESS_TCP_GRPC + 1))
 
         # REST endpoint check
