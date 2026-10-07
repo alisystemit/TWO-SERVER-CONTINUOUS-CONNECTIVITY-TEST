@@ -101,8 +101,8 @@ install_prerequisites() {
 # Get server IPs from user
 get_server_ips() {
     log "${BLUE}Please enter the server IPs:${NC}"
-    read -rp "  Server 1 IP (this server): " SERVER1
-    read -rp "  Server 2 IP (remote server): " SERVER2
+    read -rp "  Server 1 IP (this server): " SERVER1 </dev/tty
+    read -rp "  Server 2 IP (remote server): " SERVER2 </dev/tty
 
     if [ -z "$SERVER1" ] || [ -z "$SERVER2" ]; then
         log "${RED}❌ Both IPs are required.${NC}"
@@ -113,19 +113,19 @@ get_server_ips() {
 
 # Get optional configuration from user
 get_configuration() {
-    read -rp "  gRPC port [$GRPC_PORT]: " input
+    read -rp "  gRPC port [$GRPC_PORT]: " input </dev/tty
     [ -n "$input" ] && GRPC_PORT="$input"
 
-    read -rp "  REST port [$REST_PORT]: " input
+    read -rp "  REST port [$REST_PORT]: " input </dev/tty
     [ -n "$input" ] && REST_PORT="$input"
 
-    read -rp "  Test interval (seconds) [$INTERVAL]: " input
+    read -rp "  Test interval (seconds) [$INTERVAL]: " input </dev/tty
     [ -n "$input" ] && INTERVAL="$input"
 
-    read -rp "  Timeout (seconds) [$TIMEOUT]: " input
+    read -rp "  Timeout (seconds) [$TIMEOUT]: " input </dev/tty
     [ -n "$input" ] && TIMEOUT="$input"
 
-    read -rp "  Enable JSON log? (y/N): " input
+    read -rp "  Enable JSON log? (y/N): " input </dev/tty
     if [[ "$input" =~ ^[Yy]$ ]]; then
         JSON_LOG="connectivity-test-$(date +%Y%m%d-%H%M%S).json"
         log "${CYAN}📄 JSON log will be written to: $JSON_LOG${NC}"
