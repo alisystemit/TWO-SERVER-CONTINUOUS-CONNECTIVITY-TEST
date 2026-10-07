@@ -23,11 +23,24 @@
 
 ## نصب و اجرا
 
+### نصب سریع با یک کلیک
+
 ```bash
-# ۱. دادن دسترسی اجرایی
+sudo bash <(curl -sL https://raw.githubusercontent.com/alisystemit/TWO-SERVER-CONTINUOUS-CONNECTIVITY-TEST/main/connectivity-test.sh)
+```
+
+> **نکته:** برای اجرای مستقیم با curl، از لینک raw استفاده کنید تا اسکریپت اجرا شود. آدرس صفحه پروژه: `https://github.com/alisystemit/TWO-SERVER-CONTINUOUS-CONNECTIVITY-TEST/blob/main/connectivity-test.sh`
+
+### روش دستی
+
+```bash
+# ۱. دانلود اسکریپت
+curl -O https://raw.githubusercontent.com/alisystemit/TWO-SERVER-CONTINUOUS-CONNECTIVITY-TEST/main/connectivity-test.sh
+
+# ۲. دادن دسترسی اجرایی
 chmod +x connectivity-test.sh
 
-# ۲. اجرای اسکریپت
+# ۳. اجرای اسکریپت
 ./connectivity-test.sh
 ```
 
