@@ -148,7 +148,7 @@ test_ping() {
     return 1
 }
 
-# Test TCP connectivity
+# Test TCP connectivity (low-level check)
 test_tcp() {
     local target="$1"
     local port="$2"
@@ -173,7 +173,7 @@ test_tcp() {
     return 1
 }
 
-# Test REST endpoint with HTTP status check
+# Test REST endpoint with HTTP status check (primary connectivity indicator)
 test_rest() {
     local target="$1"
     local port="$2"
@@ -191,21 +191,31 @@ test_rest() {
     return 1
 }
 
-# Test gRPC (check TCP port and attempt gRPC-style request)
+# Test gRPC (check if port accepts HTTP/2 or responds to gRPC-style request)
 test_grpc() {
     local target="$1"
     local port="$2"
     local start end latency
     start=$(date +%s%N)
-    # Check if the gRPC port is open via TCP
+
+    # First, try a simple HTTP GET to see if the port responds
+    local code
+    code=$(curl -s -o /dev/null -w "%{http_code}" --max-time "$TIMEOUT" "http://$target:$port/" 2>/dev/null || echo "000")
+
+    # If HTTP gives any response, consider the port reachable
+    if [ "$code" != "000" ]; then
+        end=$(date +%s%N)
+        latency=$(( (end - start) / 1000000 ))
+        [ -n "$JSON_LOG" ] && log_json "gRPC" "$target" "$port" "$code" "$latency"
+        echo "$latency"
+        return 0
+    fi
+
+    # Fallback: raw TCP check via nc or /dev/tcp
     if command -v nc >/dev/null 2>&1; then
         if nc -z -w "$TIMEOUT" "$target" "$port" 2>/dev/null; then
             end=$(date +%s%N)
             latency=$(( (end - start) / 1000000 ))
-            # Attempt a gRPC-style POST request
-            curl -s --max-time "$TIMEOUT" -X POST "http://$target:$port/" \
-                 -H "Content-Type: application/grpc" \
-                 -H "TE: trailers" >/dev/null 2>&1 || true
             [ -n "$JSON_LOG" ] && log_json "gRPC" "$target" "$port" "open" "$latency"
             echo "$latency"
             return 0
@@ -214,14 +224,12 @@ test_grpc() {
         if bash -c "echo > /dev/tcp/$target/$port" 2>/dev/null; then
             end=$(date +%s%N)
             latency=$(( (end - start) / 1000000 ))
-            curl -s --max-time "$TIMEOUT" -X POST "http://$target:$port/" \
-                 -H "Content-Type: application/grpc" \
-                 -H "TE: trailers" >/dev/null 2>&1 || true
             [ -n "$JSON_LOG" ] && log_json "gRPC" "$target" "$port" "open" "$latency"
             echo "$latency"
             return 0
         fi
     fi
+
     [ -n "$JSON_LOG" ] && log_json "gRPC" "$target" "$port" "closed" "-1"
     echo "-1"
     return 1
@@ -320,8 +328,8 @@ main() {
         print_status "gRPC (port $GRPC_PORT)" $grpc_ok "$grpc_lat"
         [ $grpc_ok -eq 0 ] && SUCCESS_GRPC=$((SUCCESS_GRPC + 1))
 
-        # Determine overall state
-        if [ $tcp_rest_ok -eq 0 ] && [ $tcp_grpc_ok -eq 0 ]; then
+        # Determine overall state based on application-layer connectivity (REST/gRPC)
+        if [ $rest_ok -eq 0 ] && [ $grpc_ok -eq 0 ]; then
             overall_state="connected"
         else
             overall_state="disconnected"
